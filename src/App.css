@@ -1,0 +1,201 @@
+/**** Three Breakpoints, mobile first ****
+
+Mobile (no suits on cards, deck above)
+Small ( Suits, deck still above )
+Large ( Deck to side )
+*/
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: green;
+    user-select: none;
+}
+
+#App {
+    height: 720px;
+    margin: 20px auto;
+    position: relative;
+    width: 960px;
+}
+
+#deck {
+    position: absolute;
+    top: -20px;
+    padding-top: 20px;
+    left: 0;
+    width: 120px;
+    bottom: 0;
+    border-right: 5px solid #2ea020;
+}
+
+#active-pile {
+    margin-top: 20px;
+}
+
+#piles {
+    position: absolute;
+    top: 180px;
+    left: 120px;
+    right: 0;
+    bottom: 0;
+}
+
+#foundation {
+    height: 180px;
+    position: absolute;
+    top: 0;
+    left: 120px;
+    right: 0;
+}
+
+.card-pile .card-pile {
+    margin-top: -100px;
+}
+
+.up-cards {
+    margin-top: -135px;
+}
+.up-cards.no-down {
+    margin-top: 0;
+}
+
+.pile-card-down {
+    margin-top: -136px;
+}
+.pile-card-down:first-of-type {
+    margin-top: 0;
+}
+
+/* Handles the foundation piles */
+.foundation-pile {
+    float: left;
+    height: 180px;
+    margin-left: 5px;
+    width: 100px;
+}
+
+.foundation-pile .deck-card {
+    margin-left: 0;
+}
+
+.deck-card.empty {
+    background: transparent;
+}
+
+
+/* DeckPile */
+#active-pile .draggable-card + .draggable-card {
+    margin-top: -100px;
+}
+
+/* CSS GOT ALL FUNKY... AGAIN.... */
+
+.deck-card {
+    border: 2px solid #333;
+    border-radius: 14px;
+    height: 140px;
+    margin-left: 10px;
+    width: 100px;
+}
+
+.foundation-card {
+    border-radius: 14px;
+    display: inline-block;
+    height: 140px;
+    margin-left: 5px;
+    width: 100px;
+}
+
+.foundation-card.empty {
+    border: 3px solid #333;
+}
+
+.back-of-card {
+    background-color: hsl(34, 53%, 82%);
+    background-image: repeating-linear-gradient(45deg, transparent 5px, hsla(197, 62%, 11%, 0.5) 5px, hsla(197, 62%, 11%, 0.5) 10px,
+    hsla(5, 53%, 63%, 0) 10px, hsla(5, 53%, 63%, 0) 35px, hsla(5, 53%, 63%, 0.5) 35px, hsla(5, 53%, 63%, 0.5) 40px,
+    hsla(197, 62%, 11%, 0.5) 40px, hsla(197, 62%, 11%, 0.5) 50px, hsla(197, 62%, 11%, 0) 50px, hsla(197, 62%, 11%, 0) 60px,
+    hsla(5, 53%, 63%, 0.5) 60px, hsla(5, 53%, 63%, 0.5) 70px, hsla(35, 91%, 65%, 0.5) 70px, hsla(35, 91%, 65%, 0.5) 80px,
+    hsla(35, 91%, 65%, 0) 80px, hsla(35, 91%, 65%, 0) 90px, hsla(5, 53%, 63%, 0.5) 90px, hsla(5, 53%, 63%, 0.5) 110px,
+    hsla(5, 53%, 63%, 0) 110px, hsla(5, 53%, 63%, 0) 120px, hsla(197, 62%, 11%, 0.5) 120px, hsla(197, 62%, 11%, 0.5) 140px
+    ),
+    repeating-linear-gradient(135deg, transparent 5px, hsla(197, 62%, 11%, 0.5) 5px, hsla(197, 62%, 11%, 0.5) 10px,
+            hsla(5, 53%, 63%, 0) 10px, hsla(5, 53%, 63%, 0) 35px, hsla(5, 53%, 63%, 0.5) 35px, hsla(5, 53%, 63%, 0.5) 40px,
+            hsla(197, 62%, 11%, 0.5) 40px, hsla(197, 62%, 11%, 0.5) 50px, hsla(197, 62%, 11%, 0) 50px, hsla(197, 62%, 11%, 0) 60px,
+            hsla(5, 53%, 63%, 0.5) 60px, hsla(5, 53%, 63%, 0.5) 70px, hsla(35, 91%, 65%, 0.5) 70px, hsla(35, 91%, 65%, 0.5) 80px,
+            hsla(35, 91%, 65%, 0) 80px, hsla(35, 91%, 65%, 0) 90px, hsla(5, 53%, 63%, 0.5) 90px, hsla(5, 53%, 63%, 0.5) 110px,
+            hsla(5, 53%, 63%, 0) 110px, hsla(5, 53%, 63%, 0) 140px, hsla(197, 62%, 11%, 0.5) 140px, hsla(197, 62%, 11%, 0.5) 160px
+    );
+}
+
+.empty-deck {
+    border: 2px solid #aaaaaa;
+}
+.empty-deck:after {
+    content: '';
+    position: absolute;
+    top: 35px;
+    left: 22px;
+    height: 70px;
+    width: 70px;
+    border: 3px solid #aaaaaa;
+    border-radius: 70px;
+}
+
+/* Stuff reused from .card */
+
+.no-offset {
+    margin-top: 0;
+}
+.big-val {
+    font-size: 80px;
+    font-weight: bold;
+    height: 100px;
+    left: 50%;
+    line-height: 100px;
+    margin-left: -50px;
+    margin-top: -50px;
+    position: absolute;
+    text-align: center;
+    top: 80px;
+    width: 100px;
+}
+
+.upper-suit {
+    font-size: 30px;
+    margin-top: -2px;
+    margin-right: 3px;
+    font-weight: bold;
+    text-align: right;
+}
+
+/* Pile */
+
+.pile {
+    display: block;
+    height: 540px;
+    width: 120px;
+    float: left;
+}
+
+/* No idea what's down here
+
+
+
+CLEAN IT UP
+|
+|
+V
+
+*/
+
+.card {
+    background: white;
+    border: 3px solid #333;
+    display: inline-block;
+    font-size: 50px;
+    position: relative;
+    user-select: none;
+}
+
