@@ -1,4 +1,4 @@
-import { ItemTypes } from '../utils/constants';
+import { ItemTypes } from './constants';
 import canLift from './canLift';
 
 const canDrop = ( props, monitor ) => {

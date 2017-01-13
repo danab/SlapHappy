@@ -5,8 +5,8 @@ import React, {
 import { DropTarget } from 'react-dnd';
 import { connect } from 'react-redux';
 
-import { ItemTypes } from '../../utils/constants';
-import { deckToPile, pileToPile } from '../../actions/actions';
+import { ItemTypes } from '../../shared/utils/constants';
+import { deckToPile, pileToPile } from '../../shared/actions/actions';
 
 const pileTarget = {
 	drop( props, monitor ) {

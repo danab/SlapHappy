@@ -23,7 +23,7 @@ const piles = ( state = {}, action ) => {
 				)
 				.setIn(
 					[ oldPileIdx, 'up' ],
-					state.getIn( [ oldPileIdx, 'up' ] ).slice( 0, -1 * draggedPile.size )
+					state.getIn( [ oldPileIdx, 'up' ] ).slice( 0, -1 * draggedPile.length )
 				);
 	}
 	case DECK_TO_PILE: {

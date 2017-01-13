@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import { DragSource } from 'react-dnd';
 
-import { ItemTypes } from '../../utils/constants';
+import { ItemTypes } from '../../shared/utils/constants';
 import Card from '../Dumb/Card';
 import DroppableCard from '../Smart/DroppableCard';
 
@@ -16,7 +16,6 @@ const cardSource = {
 const collect = ( connect, monitor ) => {
 	return {
 		connectDragSource: connect.dragSource(),
-		connectDragPreview: connect.dragPreview(),
 		isDragging: monitor.isDragging()
 	};
 };

@@ -1,5 +1,5 @@
 import React, { PropTypes } from 'react';
-import getProps from '../../utils/getCardProps';
+import getProps from '../../shared/utils/getCardProps';
 
 
 const Card = ( { idx } ) => {

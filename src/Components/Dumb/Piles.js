@@ -8,9 +8,9 @@ import Pile from '../Smart/Pile';
 class Piles extends Component {
 	render() {
 		return (
-			<div id="piles">
+			<div className="piles">
 				{ this.props.piles.map( (pile, i) => {
-					return <Pile key={`pile-${i}`} idx={ i } pile={ pile } />;
+					return <Pile key={`pile-${i}`} idx={ i } pile={ pile } dumb={ this.props.dumb } />;
 				})}
 			</div>
 		);
@@ -18,6 +18,7 @@ class Piles extends Component {
 }
 
 Piles.propTypes = {
+	dumb: PropTypes.bool,
 	piles: PropTypes.object.isRequired
 };
 

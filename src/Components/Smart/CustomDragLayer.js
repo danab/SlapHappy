@@ -3,7 +3,7 @@ import React, {
 	PropTypes,
 } from 'react';
 import { DragLayer } from 'react-dnd';
-import { ItemTypes } from '../../utils/constants';
+import { ItemTypes } from '../../shared/utils/constants';
 
 import Card from '../Dumb/Card';
 import CardPile from '../Dumb/DumbCardPile';

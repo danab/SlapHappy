@@ -5,9 +5,9 @@ import React, {
 import { connect } from 'react-redux';
 import { DropTarget } from 'react-dnd';
 import Card from '../Dumb/Card';
-import { ItemTypes } from '../../utils/constants';
-import canDropFoundation from '../../utils/canDropFoundation';
-import { deckToFoundation, pileToFoundation } from '../../actions/actions';
+import { ItemTypes } from '../../shared/utils/constants';
+import canDropFoundation from '../../shared/utils/canDropFoundation';
+import { deckToFoundation, pileToFoundation } from '../../shared/actions/actions';
 
 const pileTarget = {
 	drop( props, monitor ) {

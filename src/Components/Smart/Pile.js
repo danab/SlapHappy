@@ -4,15 +4,18 @@ import React, {
 } from 'react';
 import { connect } from 'react-redux';
 
-import { flipCardPile } from '../../actions/actions';
+import { flipCardPile } from '../../shared/actions/actions';
 
 import CardPile from './CardPile';
+import DumbCardPile from '../Dumb/DumbCardPile';
 import EmptyPile from './EmptyPile';
 
 class Pile extends Component {
 
 	attemptFlipCard() {
-		const { pile, idx, flipCardPile } = this.props;
+		const { pile, idx, flipCardPile, dumb } = this.props;
+
+		if ( dumb ) { return; }
 
 		if ( pile.get('up').size === 0 ) {
 			flipCardPile( idx );
@@ -20,7 +23,7 @@ class Pile extends Component {
 	}
 
 	render() {
-		const { idx, pile } = this.props;
+		const { idx, pile, dumb } = this.props;
 
 		const outOfDown = pile.get('down').size === 0;
 		const outOfUp = pile.get('up').size === 0;
@@ -38,7 +41,10 @@ class Pile extends Component {
 				}
 				<div className={ upClass }>
 					{ pile.get('up').size ?
-						<CardPile pile={ pile.get('up') } idx={ idx } />
+						( dumb ) ?
+							<DumbCardPile pile={ pile.get('up') } idx={ idx } />
+							:
+							<CardPile pile={ pile.get('up') } idx={ idx } />
 						:
 						null
 					}
@@ -49,6 +55,7 @@ class Pile extends Component {
 }
 
 Pile.propTypes = {
+	dumb: PropTypes.bool,
 	flipCardPile: PropTypes.func.isRequired,
 	idx: PropTypes.number.isRequired,
 	pile: PropTypes.object.isRequired

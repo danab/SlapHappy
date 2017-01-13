@@ -1,4 +1,4 @@
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 
 const shuffledDeck = () => {
 	let deck = [];
@@ -44,15 +44,23 @@ const createPiles = ( cards ) => {
 	return fromJS( piles );
 };
 
-const fullDeck = shuffledDeck();
-// we will deal the first 28 cards, so grab the last 24...
-const startingDeck = fullDeck.slice( 28 );
+export const createGame = () => {
 
-const piles = createPiles( fullDeck.slice( 0, 28) );
-const foundation = fromJS( [ [], [], [], [], [], [], [], [] ] );
+	const fullDeck = shuffledDeck();
+// we will deal the first 28 cards, so grab the last 24...
+	const startingDeck = fullDeck.slice( 28 );
+	const deck = Map( { down: startingDeck, up: fromJS([]) } );
+
+	const piles = createPiles( fullDeck.slice( 0, 28) );
+
+	return Map( {deck, piles } );
+};
+
+export const foundation = fromJS( [ [], [], [], [], [], [], [], [] ] );
 
 export default {
-	deck: Map( { down: startingDeck, up: fromJS([]) } ),
-	piles,
-	foundation
+	games: List.of( createGame(), createGame() ),
+	foundation,
+	pending: false,
+	user: {}
 };

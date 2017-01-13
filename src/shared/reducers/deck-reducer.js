@@ -22,6 +22,7 @@ const deck = ( state = {}, action ) => {
 	case DECK_TO_PILE:
 		return state.set( 'up', state.get( 'up' ).pop() );
 	default:
+
 		return state;
 	}
 };

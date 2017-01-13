@@ -6,8 +6,8 @@ import { DragSource } from 'react-dnd';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 
-import { deckToFoundation } from '../../actions/actions';
-import canLift from '../../utils/canLift';
+import { deckToFoundation } from '../../shared/actions/actions';
+import canLift from '../../shared/utils/canLift';
 
 import Card from '../Dumb/Card';
 

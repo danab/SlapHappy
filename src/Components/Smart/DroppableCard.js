@@ -6,10 +6,10 @@ import { connect } from 'react-redux';
 import { List } from 'immutable';
 import { DropTarget } from 'react-dnd';
 
-import { deckToPile, pileToPile, pileToFoundation } from '../../actions/actions';
-import { ItemTypes } from '../../utils/constants';
-import canDrop from '../../utils/canDropPile';
-import canLift from '../../utils/canLift';
+import { deckToPile, pileToPile, pileToFoundation } from '../../shared/actions/actions';
+import { ItemTypes } from '../../shared/utils/constants';
+import canDrop from '../../shared/utils/canDropPile';
+import canLift from '../../shared/utils/canLift';
 import Card from '../Dumb/Card';
 
 const cardTarget = {

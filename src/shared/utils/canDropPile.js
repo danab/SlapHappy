@@ -1,4 +1,4 @@
-import { ItemTypes } from '../utils/constants';
+import { ItemTypes } from './constants';
 
 const canDrop = ( props, monitor ) => {
 	let topCardIdx;
