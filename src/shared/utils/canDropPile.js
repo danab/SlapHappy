@@ -1,5 +1,20 @@
 import { ItemTypes } from './constants';
 
+const isDroppable = ( topCardVal, targetCardVal ) => {
+	const suitA = Math.floor( topCardVal / 13 );
+	const suitB = Math.floor( targetCardVal / 13 );
+
+	const valA = topCardVal % 13;
+	const valB = targetCardVal % 13;
+
+	const oppositeSuits = ( suitA + suitB ) % 2;
+	const oneLess = valA + 1 === valB;
+
+	return oppositeSuits && oneLess;
+};
+
+export { isDroppable };
+
 const canDrop = ( props, monitor ) => {
 	let topCardIdx;
 	let targetCardIdx;
@@ -12,16 +27,7 @@ const canDrop = ( props, monitor ) => {
 		targetCardIdx = props.idx;
 	}
 
-	const suitA = Math.floor( topCardIdx / 13 );
-	const suitB = Math.floor( targetCardIdx / 13 );
-
-	const valA = topCardIdx % 13;
-	const valB = targetCardIdx % 13;
-
-	const oppositeSuits = ( suitA + suitB ) % 2;
-	const oneLess = valA + 1 === valB;
-
-	return oppositeSuits && oneLess;
+	return isDroppable( topCardIdx, targetCardIdx );
 };
 
 export default canDrop;

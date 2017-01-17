@@ -1,5 +1,4 @@
-import { 
-	FLIP_CARD_PILE, 
+import {
 	DECK_TO_FOUNDATION,
 	PILE_TO_FOUNDATION, 
 	PILE_TO_PILE,
@@ -7,14 +6,6 @@ import {
 	DEAL_CARDS,
 	FLIP_DECK
 } from './types';
-
-export const flipCardPile = ( pileIdx ) => {
-	return {
-		self: true,
-		type: FLIP_CARD_PILE,
-		payload: { pileIdx }
-	};
-};
 
 export const deckToFoundation = ( card, foundationIdx ) => {
 	return {

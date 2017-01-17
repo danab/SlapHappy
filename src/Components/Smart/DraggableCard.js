@@ -6,8 +6,9 @@ import { DragSource } from 'react-dnd';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 
-import { deckToFoundation } from '../../shared/actions/actions';
+import { deckToFoundation, deckToPile } from '../../shared/actions/actions';
 import canLift from '../../shared/utils/canLift';
+import canMove from '../../shared/utils/canMovePile';
 
 import Card from '../Dumb/Card';
 
@@ -41,11 +42,24 @@ class DragCard extends Component {
 
 	}
 
+	attemptMove() {
+		if ( !this.props.draggable ) { return false; }
+
+		const { piles, idx, deckToPile } = this.props;
+
+		const moveTo = canMove( piles, idx );
+
+		if ( moveTo !== -1 ) {
+			deckToPile( idx, moveTo );
+		}
+
+	}
+
 	render() {
 		const { idx, connectDragSource, isDragging } = this.props;
 
 		return connectDragSource(
-			<div className="draggable-card" onDoubleClick={ this.attemptLift.bind(this) }>
+			<div className="draggable-card" onClick={ this.attemptMove.bind(this) } onDoubleClick={ this.attemptLift.bind(this) }>
 				{ !isDragging ? <Card idx={ idx } /> : null }
 			</div>
 		);
@@ -53,18 +67,19 @@ class DragCard extends Component {
 }
 
 DragCard.propTypes = {
+	draggable: PropTypes.bool.isRequired,
 	idx: PropTypes.number.isRequired,
-	// can't mark this as required...presumably because it's connected to a different component...
-	// which begs the question, are we more worried about eslint or react doing it's job...hmm..
-	connectDragSource: PropTypes.func,
-	deckToFoundation: PropTypes.func,
+	connectDragSource: PropTypes.func.isRequired,
+	deckToFoundation: PropTypes.func.isRequired,
+	deckToPile: PropTypes.func.isRequired,
 	foundation: PropTypes.instanceOf( List ),
+	piles: PropTypes.instanceOf( List ),
 	isDragging: PropTypes.bool
 };
 
 
 const DraggableCard = DragSource( 'CARD', cardSource, collect )( DragCard );
-const ConnectedDraggableCard = connect( ( { foundation } ) => ( { foundation } ), { deckToFoundation })( DraggableCard );
+const ConnectedDraggableCard = connect( ( { foundation, games } ) => ( { foundation, piles: games.getIn( [ '0', 'piles' ] ) } ), { deckToFoundation, deckToPile })( DraggableCard );
 
 export default ConnectedDraggableCard;
 
