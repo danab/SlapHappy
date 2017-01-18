@@ -21,7 +21,7 @@ class App extends Component {
 	
 	render() {
 		// TODO: dispatch seems unneccesary
-		const { games, foundation, flipDeck, dealCards, pending } = this.props;
+		const { games, foundation, flipDeck, dealCards, pending, score } = this.props;
 
 		// if ( !this.props.user.username ) {
 		// 	return ( <div onClick={ this.giveAName.bind(this) }> Get a username </div> );
@@ -47,6 +47,15 @@ class App extends Component {
 				<div id="opponent-game" className="game">
 					<Deck deck={ opponentDeck } dumb />
 					<Piles piles={ opponentPiles } dumb/>
+				</div>
+				<div id="scores">
+					<h1> Score </h1>
+					<h3>
+						You: { score.get(0) }
+					</h3>
+					<h3>
+						Opponent: { score.get(1) }
+					</h3>
 				</div>
 			</div>
 		);

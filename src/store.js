@@ -1,9 +1,10 @@
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 import socketIO from 'socket.io-client';
+import { List } from 'immutable';
 
 import games from './shared/reducers/games-reducer';
 import foundation from './shared/reducers/foundation-reducer';
-import { START_NEW_GAME } from './shared/actions/types';
+import { START_NEW_GAME, DECK_TO_FOUNDATION, PILE_TO_FOUNDATION } from './shared/actions/types';
 
 const user = ( state = {}, action ) => {
 	if ( action.type === 'SET_USERNAME' ) {
@@ -12,6 +13,20 @@ const user = ( state = {}, action ) => {
 		return Object.assign( {}, state, { gameId: action.payload.gameId } );
 	}
 	return state;
+};
+
+const score = ( state = List.of( 0, 0 ), action ) => {
+	switch ( action.type ) {
+		case DECK_TO_FOUNDATION:
+		case PILE_TO_FOUNDATION:
+			if ( action.self ) {
+				return state.set( 0, state.get( 0 ) + 1 )
+			} else {
+				return state.set( 1, state.get( 1 ) + 1 )
+			}
+		default:
+			return state;
+	}
 };
 
 
@@ -59,7 +74,8 @@ const rootReducer = combineReducers({
 	games,
 	foundation,
 	pending,
-	user
+	user,
+	score
 });
 
 
