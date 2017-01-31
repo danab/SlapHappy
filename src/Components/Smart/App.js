@@ -13,6 +13,45 @@ import CustomDragLayer from './CustomDragLayer';
 
 import { dealCards, flipDeck } from '../../shared/actions/actions';
 
+class Timer extends Component {
+
+	// ht: http://stackoverflow.com/a/34584078/768757
+	componentDidMount() {
+		this.interval = setInterval( () => {
+			if ( this.props.end - Date.now() < 0 ) {
+				clearInterval(this.interval);
+			}
+			this.forceUpdate();
+		}, 100);
+	}
+
+	componentWillUnmount() {
+		clearInterval(this.interval);
+	}
+
+	render() {
+		const { end } = this.props;
+		let seconds = Math.round( ( end - Date.now() ) / 100 ) / 10;
+
+		//
+		if ( seconds < 0 ) {
+			seconds = '0.0';
+		} else if ( seconds > 10 ) {
+			seconds = Math.round( seconds );
+		}
+
+		return (
+			<div id="timer" className={ seconds < 10 ? 'alert' : null }>
+				{ seconds }
+			</div>
+		);
+	}
+}
+
+Timer.propTypes = {
+	end: PropTypes.number.isRequired
+};
+
 class App extends Component {
 	
 	// giveAName() {
@@ -21,7 +60,7 @@ class App extends Component {
 	
 	render() {
 		// TODO: dispatch seems unneccesary
-		const { games, foundation, flipDeck, dealCards, pending, score } = this.props;
+		const { status, timer, games, foundation, flipDeck, dealCards, pending, score } = this.props;
 
 		// if ( !this.props.user.username ) {
 		// 	return ( <div onClick={ this.giveAName.bind(this) }> Get a username </div> );
@@ -57,12 +96,30 @@ class App extends Component {
 						Opponent: { score.get(1) }
 					</h3>
 				</div>
+				<Timer end={ timer } />
+				{ !status ?
+					<div id="game-over">
+						<div id="game-over-inside">
+							{ score.get( 0 ) > score.get( 1 ) ?
+								'You win!' : score.get( 0 ) === score.get( 1 ) ?
+									'Tie Game.'
+									:
+									'You lose.'
+							}
+						</div>
+					</div>
+					:
+					null
+				}
 			</div>
 		);
 	}
 }
 
 App.propTypes = {
+	score: PropTypes.object,
+	status: PropTypes.string,
+	timer: PropTypes.number,
 	dealCards: PropTypes.func,
 	flipDeck: PropTypes.func,
 	foundation: PropTypes.instanceOf( List ).isRequired,

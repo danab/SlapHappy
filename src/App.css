@@ -224,3 +224,48 @@ V
     text-align: right;
     padding: 30px;
 }
+
+/* Timer */
+#timer {
+    background: rgba( 0, 0, 0, 0.3 );
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    width: 100px;
+    margin-left: -50px;
+    transform-origin: 0 100%;
+    text-align: center;
+    padding: 30px;
+}
+
+#timer.alert {
+    color: red;
+}
+
+/* Game over overlay */
+#game-over {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba( 255, 255, 255, .5 );
+    z-index: 99999;
+}
+
+#game-over #game-over-inside {
+    color: red;
+    border-radius: 45px;
+    height: 200px;
+    width: 500px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    margin-top: -100px;
+    margin-left: -250px;
+    text-align: center;
+    line-height: 200px;
+    font-size: 60px;
+    font-weight: bold;
+    background: rgba( 0, 0, 0, 1 );
+}

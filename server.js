@@ -4,7 +4,10 @@ const http = require( 'http' ).Server( app );
 const io = require( 'socket.io' )( http );
 
 import { createGame, foundation } from './src/shared/utils/initialize';
-import { START_NEW_GAME } from './src/shared/actions/types';
+import { START_NEW_GAME, DECK_TO_FOUNDATION, PILE_TO_FOUNDATION } from './src/shared/actions/types';
+
+import canLift from './src/shared/utils/canLift';
+import foundationReducer from './src/shared/reducers/foundation-reducer';
 
 app.use(express.static('build'));
 
@@ -16,6 +19,27 @@ let users = [];
 let games = [];
 let gameId = 0;
 
+// in seconds
+const gameTime = 60;
+const increment = 10;
+const maxGameTime = 90;
+
+
+const updateGameTime = ( gameId ) => {
+	const { timer, endOfGame } = games[ gameId ];
+
+	const newEndOfGame = endOfGame + increment * 1000;
+	const msRemaining = Math.min( newEndOfGame - Date.now(), maxGameTime * 1000 );
+
+	clearTimeout( timer );
+
+	games[ gameId ].timer = setTimeout( function() {
+		io.in( gameId ).emit( 'action', { type: 'END_GAME' } );
+	}, msRemaining );
+	games[ gameId ].endOfGame = newEndOfGame;
+
+	io.in( gameId ).emit( 'action', { type: 'UPDATE_TIME', payload: { gameTime: Math.min( msRemaining / 1000, maxGameTime ) } } );
+};
 io.on( 'connect', function( socket ) {
 
 	users.push( socket.id );
@@ -25,7 +49,7 @@ io.on( 'connect', function( socket ) {
 		startNewGame();
 	}
 
-	socket.on('action', function (action) {
+	socket.on('action', function (action, callback) {
 		const gameId = socket.gameId;
 
 		delete action.self;
@@ -33,9 +57,26 @@ io.on( 'connect', function( socket ) {
 		console.log( `broadcast ${action.type} to ${gameId}` ); // eslint-disable-line no-console
 		socket.broadcast.to( gameId ).emit( 'action', action );
 
-		// TODO: Check foundation before confirming
+
+		switch ( action.type ) {
+			// this is an attempt to avoid race conditions, but it may produce weird results on the client side?
+		case DECK_TO_FOUNDATION:
+		case PILE_TO_FOUNDATION:
+			let found = games[gameId].foundation;
+			const { foundationIdx, card } = action.payload;
+			if( canLift( found.get( foundationIdx ), card ) ) {
+				callback( true );
+				games[ gameId ].foundation = foundationReducer( found, action );
+					// update timer for both sockets
+				updateGameTime( gameId );
+			} else {
+				callback( false );
+			}
+		}
+
 	});
 
+	// TODO: Full clean up.
 	socket.on( 'disconnect', () => {
 		// remove user if they are looking for a game.
 		if ( users.indexOf( socket.id ) !== -1 ) {
@@ -72,18 +113,27 @@ const startNewGame = () => {
 		type: START_NEW_GAME,
 		payload: {
 			games: [ game0.toJS(), game1.toJS() ],
-			gameId: gameId
+			gameId: gameId,
+			gameTime
 		}
 	});
 	socket1.emit( 'action', {
 		type: START_NEW_GAME,
 		payload: {
 			games: [ game1.toJS(), game0.toJS() ],
-			gameId: gameId
+			gameId: gameId,
+			gameTime
 		}
 	});
 
-	games[ gameId ] = foundation;
+	games[ gameId ] = {
+		timer: setTimeout( function() {
+			socket0.emit('action', {type: 'END_GAME'});
+			socket1.emit('action', {type: 'END_GAME'});
+		}, gameTime * 1000 ),
+		endOfGame: Date.now() + gameTime * 1000,
+		foundation
+	};
 	
 	// because I don't completely understand the async nature of javascript
 	// ...could a third user have snuck in here? I dunno.

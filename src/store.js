@@ -15,20 +15,39 @@ const user = ( state = {}, action ) => {
 	return state;
 };
 
-const score = ( state = List.of( 0, 0 ), action ) => {
-	switch ( action.type ) {
-		case DECK_TO_FOUNDATION:
-		case PILE_TO_FOUNDATION:
-			if ( action.self ) {
-				return state.set( 0, state.get( 0 ) + 1 )
-			} else {
-				return state.set( 1, state.get( 1 ) + 1 )
-			}
-		default:
-			return state;
+const timer = ( state = Date.now() + 60000, action ) => {
+	switch( action.type ) {
+	case START_NEW_GAME:
+	case 'UPDATE_TIME':
+		return Date.now() + action.payload.gameTime * 1000;
+	default:
+		return state;
 	}
 };
 
+const score = ( state = List.of( 0, 0 ), action ) => {
+	switch ( action.type ) {
+	case DECK_TO_FOUNDATION:
+	case PILE_TO_FOUNDATION:
+		if ( action.self ) {
+			return state.set( 0, state.get( 0 ) + 1 );
+		} else {
+			return state.set( 1, state.get( 1 ) + 1 );
+		}
+	default:
+		return state;
+	}
+};
+
+const status = ( state = production ? 'pending' : 'in progress', action ) => {
+	switch ( action.type ) {
+	case START_NEW_GAME:
+		return 'in progress';
+	case 'END_GAME':
+		return false;
+	}
+	return state;
+};
 
 const pending = ( state = true, action ) => ( action.type === START_NEW_GAME ) ? false : state;
 
@@ -49,9 +68,23 @@ if ( production ) {
 
 		return next => action => {
 			if ( action.self ) {
-				socket.emit(channelName, action);
+				switch ( action.type ) {
+				case DECK_TO_FOUNDATION:
+				case PILE_TO_FOUNDATION:
+						// add a callback
+					socket.emit(channelName, action, (resp) => {
+						if ( resp ) {
+							return next( action );
+						} 
+					});
+					return;
+				default:
+					socket.emit(channelName, action);
+					return next(action);
+				}
+			} else {
+				return next(action);
 			}
-			return next(action);
 		};
 	};
 
@@ -75,7 +108,9 @@ const rootReducer = combineReducers({
 	foundation,
 	pending,
 	user,
-	score
+	score,
+	timer,
+	status
 });
 
 
