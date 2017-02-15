@@ -4,7 +4,8 @@ import {
 	PILE_TO_PILE,
 	DECK_TO_PILE,
 	DEAL_CARDS,
-	FLIP_DECK
+	FLIP_DECK,
+	LOOK_FOR_NEW_GAME
 } from './types';
 
 export const deckToFoundation = ( card, foundationIdx ) => {
@@ -52,5 +53,12 @@ export const flipDeck = () => {
 	return {
 		self: true,
 		type: FLIP_DECK
+	};
+};
+
+export const lookForNewGame = () => {
+	return {
+		self: true,
+		type: LOOK_FOR_NEW_GAME
 	};
 };

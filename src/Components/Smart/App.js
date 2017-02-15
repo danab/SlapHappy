@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { DragDropContext } from 'react-dnd';
-import { List } from 'immutable';
+import { List, Map } from 'immutable';
 // import HTML5Backend from 'react-dnd-html5-backend';
 import { default as TouchBackend } from 'react-dnd-touch-backend';
 import '../../App.css';
@@ -9,6 +9,8 @@ import '../../App.css';
 import Deck from '../Dumb/Deck';
 import Foundation from '../Dumb/Foundation';
 import Piles from '../Dumb/Piles';
+import GameStatus from '../Smart/GameStatus';
+import Loader from '../Dumb/Loader';
 import CustomDragLayer from './CustomDragLayer';
 
 import { dealCards, flipDeck } from '../../shared/actions/actions';
@@ -60,13 +62,14 @@ class App extends Component {
 	
 	render() {
 		// TODO: dispatch seems unneccesary
-		const { status, timer, games, foundation, flipDeck, dealCards, pending, score } = this.props;
+		const { status, timer, games, foundation, flipDeck, dealCards, score } = this.props;
 
 		// if ( !this.props.user.username ) {
 		// 	return ( <div onClick={ this.giveAName.bind(this) }> Get a username </div> );
 		// }
-		if ( pending ) {
-			return ( <div> Looking for a match. </div> );
+
+		if ( status.get( 'state' ) === 'pending' ) {
+			return <Loader />;
 		}
 
 		const yourDeck = games.getIn([ 0, 'deck' ]);
@@ -97,17 +100,8 @@ class App extends Component {
 					</h3>
 				</div>
 				<Timer end={ timer } />
-				{ !status ?
-					<div id="game-over">
-						<div id="game-over-inside">
-							{ score.get( 0 ) > score.get( 1 ) ?
-								'You win!' : score.get( 0 ) === score.get( 1 ) ?
-									'Tie Game.'
-									:
-									'You lose.'
-							}
-						</div>
-					</div>
+				{ status.get( 'state' ) === 'done' ?
+					<GameStatus />
 					:
 					null
 				}
@@ -118,13 +112,12 @@ class App extends Component {
 
 App.propTypes = {
 	score: PropTypes.object,
-	status: PropTypes.string,
+	status: PropTypes.instanceOf( Map ).isRequired,
 	timer: PropTypes.number,
 	dealCards: PropTypes.func,
 	flipDeck: PropTypes.func,
 	foundation: PropTypes.instanceOf( List ).isRequired,
 	games: PropTypes.instanceOf( List ),
-	pending: PropTypes.bool
 };
 
 const ConnectedApp = connect( state => state, { dealCards, flipDeck })(App);

@@ -13,17 +13,17 @@ const flipTopCard = ( state, pileIdx ) => {
 
 const piles = ( state = {}, action ) => {
 	switch( action.type ) {
-	case PILE_TO_FOUNDATION: {
-		const { pileIdx } = action.payload;
-		const newUp = state.getIn( [ pileIdx, 'up' ] ).pop();
-		const newState = state
+		case PILE_TO_FOUNDATION: {
+			const { pileIdx } = action.payload;
+			const newUp = state.getIn( [ pileIdx, 'up' ] ).pop();
+			const newState = state
 				.setIn( [ pileIdx, 'up'], newUp );
 
-		return flipTopCard( newState, pileIdx );
-	}
-	case PILE_TO_PILE: {
-		const { newPileIdx, oldPileIdx, draggedPile } = action.payload;
-		const newState = state
+			return flipTopCard( newState, pileIdx );
+		}
+		case PILE_TO_PILE: {
+			const { newPileIdx, oldPileIdx, draggedPile } = action.payload;
+			const newState = state
 				.setIn(
 					[ newPileIdx, 'up' ],
 					state.getIn( [ newPileIdx, 'up' ] ).concat( draggedPile )
@@ -33,18 +33,18 @@ const piles = ( state = {}, action ) => {
 					state.getIn( [ oldPileIdx, 'up' ] ).slice( 0, -1 * draggedPile.length )
 				);
 
-		return flipTopCard( newState, oldPileIdx );
-	}
-	case DECK_TO_PILE: {
-		const { card, pileIdx } = action.payload;
-		return state
+			return flipTopCard( newState, oldPileIdx );
+		}
+		case DECK_TO_PILE: {
+			const { card, pileIdx } = action.payload;
+			return state
 				.setIn( 
 					[ pileIdx, 'up' ], 
 					state.getIn( [ pileIdx, 'up' ] ).push( card ) 
 				);
-	}
-	default:
-		return state;
+		}
+		default:
+			return state;
 	}
 };
 

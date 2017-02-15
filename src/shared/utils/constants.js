@@ -3,3 +3,6 @@ export const ItemTypes = {
 	CARD: 'CARD'
 };
 
+// initial time in seconds
+export const TIME = 30;
+

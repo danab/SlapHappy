@@ -1,10 +1,11 @@
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 import socketIO from 'socket.io-client';
-import { List } from 'immutable';
+import { List, fromJS } from 'immutable';
 
 import games from './shared/reducers/games-reducer';
 import foundation from './shared/reducers/foundation-reducer';
-import { START_NEW_GAME, DECK_TO_FOUNDATION, PILE_TO_FOUNDATION } from './shared/actions/types';
+import { START_NEW_GAME, DECK_TO_FOUNDATION, PILE_TO_FOUNDATION, LOOK_FOR_NEW_GAME, END_GAME } from './shared/actions/types';
+import { TIME } from './shared/utils/constants';
 
 const user = ( state = {}, action ) => {
 	if ( action.type === 'SET_USERNAME' ) {
@@ -15,49 +16,55 @@ const user = ( state = {}, action ) => {
 	return state;
 };
 
-const timer = ( state = Date.now() + 60000, action ) => {
+const timer = ( state = Date.now() + TIME * 1000, action ) => {
 	switch( action.type ) {
-	case START_NEW_GAME:
-	case 'UPDATE_TIME':
-		return Date.now() + action.payload.gameTime * 1000;
-	default:
-		return state;
+		case START_NEW_GAME:
+		case 'UPDATE_TIME':
+			return Date.now() + action.payload.gameTime * 1000;
+		default:
+			return state;
 	}
 };
 
 const score = ( state = List.of( 0, 0 ), action ) => {
 	switch ( action.type ) {
-	case DECK_TO_FOUNDATION:
-	case PILE_TO_FOUNDATION:
-		if ( action.self ) {
-			return state.set( 0, state.get( 0 ) + 1 );
-		} else {
-			return state.set( 1, state.get( 1 ) + 1 );
-		}
-	default:
-		return state;
+		case DECK_TO_FOUNDATION:
+		case PILE_TO_FOUNDATION:
+			if ( action.self ) {
+				return state.set( 0, state.get( 0 ) + 1 );
+			} else {
+				return state.set( 1, state.get( 1 ) + 1 );
+			}
+		case START_NEW_GAME:
+			return List.of( 0, 0 );
+		default:
+			return state;
 	}
 };
 
-const status = ( state = production ? 'pending' : 'in progress', action ) => {
+const production = process.env.NODE_ENV === 'production';
+
+const statusState = { state: production ? 'pending' : 'in progress' };
+const statusObj = fromJS( statusState );
+const status = ( state = statusObj , action ) => {
 	switch ( action.type ) {
-	case START_NEW_GAME:
-		return 'in progress';
-	case 'END_GAME':
-		return false;
+		case START_NEW_GAME:
+			return state.set( 'state', 'in progress' );
+		case END_GAME:
+			return state.set( 'state', 'done' );
+		case LOOK_FOR_NEW_GAME:
+			return state.set( 'state', 'pending' );
+		default:
+			return state;
 	}
-	return state;
 };
-
-const pending = ( state = true, action ) => ( action.type === START_NEW_GAME ) ? false : state;
 
 import initial from './shared/utils/initialize';
 
-const initialServer = { games: null, foundation: initial.foundation, pending: true, user: initial.user };
+const initialServer = { games: null, foundation: initial.foundation, user: initial.user };
 
 let middleware;
 
-const production = process.env.NODE_ENV === 'production';
 
 if ( production ) {
 	const socket = socketIO.connect();
@@ -69,18 +76,18 @@ if ( production ) {
 		return next => action => {
 			if ( action.self ) {
 				switch ( action.type ) {
-				case DECK_TO_FOUNDATION:
-				case PILE_TO_FOUNDATION:
+					case DECK_TO_FOUNDATION:
+					case PILE_TO_FOUNDATION:
 						// add a callback
-					socket.emit(channelName, action, (resp) => {
-						if ( resp ) {
-							return next( action );
-						} 
-					});
-					return;
-				default:
-					socket.emit(channelName, action);
-					return next(action);
+						socket.emit(channelName, action, (resp) => {
+							if ( resp ) {
+								return next( action );
+							} 
+						});
+						return;
+					default:
+						socket.emit(channelName, action);
+						return next(action);
 				}
 			} else {
 				return next(action);
@@ -106,7 +113,6 @@ if ( production ) {
 const rootReducer = combineReducers({
 	games,
 	foundation,
-	pending,
 	user,
 	score,
 	timer,

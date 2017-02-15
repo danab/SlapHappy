@@ -5,3 +5,6 @@ export const DECK_TO_PILE = 'DECK_TO_PILE';
 export const FLIP_DECK = 'FLIP_DECK';
 export const DEAL_CARDS = 'DEAL_CARDS';
 export const START_NEW_GAME = 'START_NEW_GAME';
+export const USER_DISCONNECTED = 'USER_DISCONNECTED';
+export const LOOK_FOR_NEW_GAME = 'LOOK_FOR_NEW_GAME';
+export const END_GAME = 'END_GAME';

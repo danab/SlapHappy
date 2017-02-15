@@ -4,7 +4,8 @@ const http = require( 'http' ).Server( app );
 const io = require( 'socket.io' )( http );
 
 import { createGame, foundation } from './src/shared/utils/initialize';
-import { START_NEW_GAME, DECK_TO_FOUNDATION, PILE_TO_FOUNDATION } from './src/shared/actions/types';
+import { START_NEW_GAME, DECK_TO_FOUNDATION, PILE_TO_FOUNDATION, LOOK_FOR_NEW_GAME, USER_DISCONNECTED } from './src/shared/actions/types';
+import { TIME } from './src/shared/utils/constants';
 
 import canLift from './src/shared/utils/canLift';
 import foundationReducer from './src/shared/reducers/foundation-reducer';
@@ -16,16 +17,17 @@ app.get( '/', function( req, res ) {
 });
 
 let users = [];
+let activeUsers = {};
 let games = [];
 let gameId = 0;
 
 // in seconds
-const gameTime = 60;
+const gameTime = TIME;
 const increment = 10;
-const maxGameTime = 90;
-
+const maxGameTime = 60;
 
 const updateGameTime = ( gameId ) => {
+
 	const { timer, endOfGame } = games[ gameId ];
 
 	const newEndOfGame = endOfGame + increment * 1000;
@@ -40,44 +42,60 @@ const updateGameTime = ( gameId ) => {
 
 	io.in( gameId ).emit( 'action', { type: 'UPDATE_TIME', payload: { gameTime: Math.min( msRemaining / 1000, maxGameTime ) } } );
 };
-io.on( 'connect', function( socket ) {
 
-	users.push( socket.id );
+const addUserToPool = socketId => {
+	users.push( socketId );
 	console.log( `${users.length} user${(users.length === 1)?'':'s'} looking for a game`); // eslint-disable-line no-console
 
 	if ( users.length >= 2 ) {
 		startNewGame();
 	}
+}
+
+io.on( 'connect', function( socket ) {
+
+	addUserToPool( socket.id );
 
 	socket.on('action', function (action, callback) {
 		const gameId = socket.gameId;
 
 		delete action.self;
 
-		console.log( `broadcast ${action.type} to ${gameId}` ); // eslint-disable-line no-console
-		socket.broadcast.to( gameId ).emit( 'action', action );
-
+		let broadcast = true;
 
 		switch ( action.type ) {
+			case LOOK_FOR_NEW_GAME:
+				socket.leave( socket.gameId );
+				addUserToPool( socket.id );
+				broadcast = false;
+				break;
 			// this is an attempt to avoid race conditions, but it may produce weird results on the client side?
-		case DECK_TO_FOUNDATION:
-		case PILE_TO_FOUNDATION:
-			let found = games[gameId].foundation;
-			const { foundationIdx, card } = action.payload;
-			if( canLift( found.get( foundationIdx ), card ) ) {
-				callback( true );
-				games[ gameId ].foundation = foundationReducer( found, action );
+			case DECK_TO_FOUNDATION:
+			case PILE_TO_FOUNDATION: {
+				let found = games[gameId].foundation;
+				const { foundationIdx, card } = action.payload;
+				if( canLift( found.get( foundationIdx ), card ) ) {
+					callback( true );
+					games[ gameId ].foundation = foundationReducer( found, action );
 					// update timer for both sockets
-				updateGameTime( gameId );
-			} else {
-				callback( false );
+					updateGameTime( gameId );
+				} else {
+					callback( false );
+					broadcast = false;
+				}
 			}
 		}
 
+		if ( broadcast ) {
+			console.log( `broadcast ${action.type} to ${gameId}` ); // eslint-disable-line no-console
+			socket.broadcast.to( gameId ).emit( 'action', action );
+		}
 	});
 
 	// TODO: Full clean up.
 	socket.on( 'disconnect', () => {
+		const gameId = socket.gameId;
+
 		// remove user if they are looking for a game.
 		if ( users.indexOf( socket.id ) !== -1 ) {
 			users.splice( users.indexOf( socket.id ), 1 );
@@ -85,9 +103,22 @@ io.on( 'connect', function( socket ) {
 		}
 
 		// remove user from game?
+		if ( activeUsers[ socket.id ] ) {
+			// remove from active users
+			delete activeUsers[ socket.id ];
 
+			// dispatch game won event
+			socket.broadcast.to( gameId ).emit( 'action', { type: USER_DISCONNECTED } );
 
-		// if last player in game, remove game from games and 
+		}
+
+		// if last player in game, remove game from games
+		if ( gameId !== undefined ) {
+			if ( getUsersInRoomNumber( gameId ) === 0 ) {
+				delete games[ gameId ];
+			}
+		}
+
 	});
 
 });
@@ -126,6 +157,9 @@ const startNewGame = () => {
 		}
 	});
 
+	activeUsers[ socket0.id ] = true;
+	activeUsers[ socket1.id ] = true;
+
 	games[ gameId ] = {
 		timer: setTimeout( function() {
 			socket0.emit('action', {type: 'END_GAME'});
@@ -135,15 +169,23 @@ const startNewGame = () => {
 		foundation
 	};
 	
-	// because I don't completely understand the async nature of javascript
-	// ...could a third user have snuck in here? I dunno.
+	// ...could a third user have snuck in here? I don't think so... better safe...
 	users.splice( 0, 2 );
 
 	// rev for the next game
 	gameId++;
 };
 
-const port = 3003;
+const port = process.env.PORT || 3003;
 http.listen( port, function() {
 	console.log( `listening on *:${port}` ); // eslint-disable-line no-console
 });
+
+// HT: http://stackoverflow.com/questions/24108833/node-js-socket-io-room-total-of-users
+var getUsersInRoomNumber = function( roomName ) {
+	var room = io.nsps[ '/' ].adapter.rooms[ roomName ];
+	// it seems like it deletes the room before the disconnect callback occurs
+	if (!room) { return 0; }
+	// however if it's not the last socket in a room, it seems to return the previous number of users
+	return Object.keys(room).length;
+};

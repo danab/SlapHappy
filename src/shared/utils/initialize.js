@@ -61,6 +61,5 @@ export const foundation = fromJS( [ [], [], [], [], [], [], [], [] ] );
 export default {
 	games: List.of( createGame(), createGame() ),
 	foundation,
-	pending: false,
 	user: {}
 };
